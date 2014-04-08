@@ -71,7 +71,7 @@
         Note *noteToStore = [NSEntityDescription insertNewObjectForEntityForName:@"Note"
                                                           inManagedObjectContext:self.managedObjectContext];
         noteToStore.noteTitle = note.noteTitle;
-        noteToStore.noteTitle = note.noteDescription;
+        noteToStore.noteDescription = note.noteDescription;
         noteToStore.noteComment = note.noteComment;
         noteToStore.noteLatitude = [NSNumber numberWithFloat:note.noteLatitude];
         noteToStore.noteLongitude = [NSNumber numberWithFloat:note.noteLongitude];

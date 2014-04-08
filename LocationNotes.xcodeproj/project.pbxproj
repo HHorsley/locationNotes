@@ -489,6 +489,7 @@
 				17B4B3ED18EA478600C737EA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		17B4B3EE18EA478600C737EA /* Build configuration list for PBXNativeTarget "LocationNotesTests" */ = {
 			isa = XCConfigurationList;
@@ -497,6 +498,7 @@
 				17B4B3F018EA478600C737EA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

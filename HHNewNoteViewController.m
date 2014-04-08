@@ -18,6 +18,8 @@ IBOutlet UITextField *titleField;
 IBOutlet UITextField *descriptionField;
 IBOutlet UITextField *commentField;
 }
+@property (weak, nonatomic) IBOutlet UILabel *longitudeDisplayField;
+@property (weak, nonatomic) IBOutlet UILabel *latitudeDisplayField;
 
 - (IBAction)createNote:(id)sender;
 
@@ -95,6 +97,16 @@ IBOutlet UITextField *commentField;
 	titleField.inputAccessoryView = self.keyboardToolbar;
     descriptionField.inputAccessoryView = self.keyboardToolbar;
     commentField.inputAccessoryView = self.keyboardToolbar;
+    
+    //display location
+    CLLocation *location = [self.locationManager location];
+    CLLocationCoordinate2D coordinates = [location coordinate];
+    NSNumber *longitudeNumer = [NSNumber numberWithDouble:coordinates.longitude ];
+    NSNumber *latitudeNumer = [NSNumber numberWithDouble:coordinates.latitude ];
+    _longitudeDisplayField.text = [longitudeNumer stringValue];
+    _latitudeDisplayField.text = [latitudeNumer stringValue];
+    
+    
 }
 
 - (void)didReceiveMemoryWarning
