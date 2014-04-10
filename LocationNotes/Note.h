@@ -17,5 +17,6 @@
 @property (nonatomic, retain) NSString * noteComment;
 @property (nonatomic, retain) NSNumber * noteLatitude;
 @property (nonatomic, retain) NSNumber * noteLongitude;
+@property (nonatomic, retain) NSString * noteImageURL;
 
 @end

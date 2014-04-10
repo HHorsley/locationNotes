@@ -63,6 +63,7 @@
 }
 
 
+
 #pragma mark - Core Data for adding Notes
 
 - (BOOL)addNoteFromWrapper:(HHNote *)note
@@ -75,7 +76,8 @@
         noteToStore.noteComment = note.noteComment;
         noteToStore.noteLatitude = [NSNumber numberWithFloat:note.noteLatitude];
         noteToStore.noteLongitude = [NSNumber numberWithFloat:note.noteLongitude];
-        
+        noteToStore.noteImageURL = note.noteImageURL;
+    
         NSError *error;
         if (![self.managedObjectContext save:&error]) {     //committing changes
             return NO;

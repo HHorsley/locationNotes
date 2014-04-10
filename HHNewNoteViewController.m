@@ -11,17 +11,26 @@
 #import "HHAppDelegate.h"
 #import <CoreLocation/CoreLocation.h>
 
-@interface HHNewNoteViewController () <UIActionSheetDelegate, UITextFieldDelegate, CLLocationManagerDelegate>
+@interface HHNewNoteViewController () <UIActionSheetDelegate, UITextFieldDelegate, CLLocationManagerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 {
 IBOutlet UITextField *titleField;
 IBOutlet UITextField *descriptionField;
 IBOutlet UITextField *commentField;
 }
+@property (strong, nonatomic) NSString *pathOfImage;
+
+
 @property (weak, nonatomic) IBOutlet UILabel *longitudeDisplayField;
 @property (weak, nonatomic) IBOutlet UILabel *latitudeDisplayField;
 
 - (IBAction)createNote:(id)sender;
+
+//image stuff
+@property (nonatomic, strong) IBOutlet UIImageView *chosenImage;
+- (IBAction)choosePhoto:(id)sender;
+- (void)takePicture;
+- (void)choosePicture;
 
 //delegates
 @property (nonatomic, strong) HHAppDelegate *appDelegate;
@@ -102,11 +111,13 @@ IBOutlet UITextField *commentField;
     CLLocation *location = [self.locationManager location];
     CLLocationCoordinate2D coordinates = [location coordinate];
     NSNumber *longitudeNumer = [NSNumber numberWithDouble:coordinates.longitude ];
+    NSLog(@"longitudeNum: %@", longitudeNumer);
     NSNumber *latitudeNumer = [NSNumber numberWithDouble:coordinates.latitude ];
     _longitudeDisplayField.text = [longitudeNumer stringValue];
     _latitudeDisplayField.text = [latitudeNumer stringValue];
     
     
+
 }
 
 - (void)didReceiveMemoryWarning
@@ -119,15 +130,20 @@ IBOutlet UITextField *commentField;
 
 - (IBAction)createNote:(id)sender
 {
+    NSLog(@"pathofImage: %@", _pathOfImage);
     HHNote *newNoteToAdd = [[HHNote alloc] init];
     newNoteToAdd.noteTitle = titleField.text;
     newNoteToAdd.noteDescription = descriptionField.text;
     newNoteToAdd.noteComment = commentField.text;
+    newNoteToAdd.noteImageURL = _pathOfImage;
+    NSLog(@"noteImageURL: %@", newNoteToAdd.noteImageURL);
+
     
     // get location
     CLLocation *location = [self.locationManager location];
     CLLocationCoordinate2D coordinates = [location coordinate];
     newNoteToAdd.noteLatitude = coordinates.latitude;
+    NSLog(@"coordiantes.latitude: %f", coordinates.latitude);
     newNoteToAdd.noteLongitude = coordinates.longitude;
     
     if ([self.appDelegate addNoteFromWrapper:newNoteToAdd]) {
@@ -143,14 +159,25 @@ IBOutlet UITextField *commentField;
 }
 
 
+
 #pragma mark - ActionSheetDelegate
+
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == 0) {
-        [self dismissViewControllerAnimated:YES completion:nil];
+    switch (buttonIndex)
+    {
+        case 0:
+        {
+            [self takePicture];
+            break;
+        }
+        case 1:
+            [self choosePicture];
+            break;
     }
 }
+
 
 #pragma mark - Keyboard stuff
 
@@ -237,6 +264,105 @@ IBOutlet UITextField *commentField;
     }
     
     return _locationManager;
+}
+
+
+#pragma mark - uploadImage
+
+- (IBAction)choosePhoto:(id)sender
+{
+    UIActionSheet *choosePhoto = [[UIActionSheet alloc] initWithTitle:@"How do you want to select a picture?"
+                                                             delegate:self
+                                                    cancelButtonTitle:@"Cancel"
+                                               destructiveButtonTitle:nil
+                                                    otherButtonTitles:@"Take Picture", @"Choose Picture", nil];
+    [choosePhoto setTag:2];
+    [choosePhoto showInView:self.view];
+    
+
+}
+
+
+- (void)takePicture
+{
+    if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+    {
+        UIAlertView *noCamera = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                           message:@"This device does not seem to have a camera."
+                                                          delegate:self
+                                                 cancelButtonTitle:@"Ok"
+                                                 otherButtonTitles:nil, nil];
+        [noCamera show];
+    } else {
+        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+        picker.delegate = self;
+        picker.allowsEditing = YES;
+        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        picker.cameraFlashMode = UIImagePickerControllerCameraFlashModeOff;
+
+        
+        [self presentViewController:picker
+                           animated:YES
+                         completion:nil];
+    }
+}
+
+- (void)choosePicture
+{
+    UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+    picker.delegate = self;
+    picker.allowsEditing = YES;
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    
+    [self presentViewController:picker
+                       animated:YES
+                     completion:nil];
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker
+didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    UIImage *chosenImage = info[UIImagePickerControllerEditedImage];
+    self.chosenImage.image = chosenImage;
+    
+    [self saveImageToDisk:self.chosenImage.image];
+    
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    UIAlertView *noCamera = [[UIAlertView alloc] initWithTitle:@"Sorry"
+                                                       message:@"Seems like picking a photo didn't really work out for you."
+                                                      delegate:self
+                                             cancelButtonTitle:@"Ok"
+                                             otherButtonTitles:nil, nil];
+    [noCamera show];
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+
+#pragma mark - Core Data for adding Images
+
+- (void)saveImageToDisk:(UIImage *)imageToSave
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *docs = [paths objectAtIndex:0];
+    
+    NSInteger randomNumber = arc4random();
+    
+    NSString *path = [docs stringByAppendingFormat:@"/%@%d.jpg", titleField.text, randomNumber];
+    _pathOfImage = path;
+    
+    NSData *imageData = [NSData dataWithData:UIImageJPEGRepresentation(imageToSave, 80)];
+    NSError *writeError = nil;
+    [imageData writeToFile:path options:NSDataWritingAtomic error:&writeError];
+    
+    if(writeError!=nil) {
+        NSLog(@"%@: Error saving image: %@", [self class], [writeError localizedDescription]);
+    }
+    
 }
 
 

@@ -26,9 +26,13 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    NSLog(@"%@", _noteTitle);
     _noteTitleLabel.text = _noteTitle;
     _noteDescriptionLabel.text = _noteDescription;
     _noteCommentLabel.text = _noteComment;
+    NSLog(@"%@", _noteImageURL);
+    _noteImageToShow.image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@",_noteImageURL]];
+    
 }
 
 - (void)didReceiveMemoryWarning

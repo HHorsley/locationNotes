@@ -16,5 +16,7 @@
 @dynamic noteComment;
 @dynamic noteLatitude;
 @dynamic noteLongitude;
+@dynamic noteImageURL;
+
 
 @end

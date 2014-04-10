@@ -25,6 +25,7 @@
 @property (nonatomic, strong) NSString *titleToShow;
 @property (nonatomic, strong) NSString *descriptionToShow;
 @property (nonatomic, strong) NSString *commentToShow;
+@property (nonatomic, strong) NSString *imageURL;
 
 //make appDelegate a property
 @property (nonatomic, strong) HHAppDelegate *appDelegate;
@@ -111,12 +112,16 @@
         MKPointAnnotation *pin = [[MKPointAnnotation alloc] init];
         pin.title = n.noteTitle;
         pin.coordinate = CLLocationCoordinate2DMake ([n.noteLatitude floatValue], [n.noteLongitude floatValue]);
+//        [pin setImageWithURL:[NSURL URLWithString:@"%@", n.noteImageURL] placeholderImage:[UIImage imageNamed:@"placeholder.png"]];
+    
+        
         [annotations addObject:pin];
         [self.notesDictionary setObject:n forKey:n.noteTitle];
     }
     
     [self.mapView showAnnotations:annotations animated:YES];
 }
+
 
 - (MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id <MKAnnotation>)annotation {
     static NSString* AnnotationIdentifier = @"AnnotationIdentifier";
@@ -126,6 +131,15 @@
     UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
     [rightButton setTitle:annotation.title forState:UIControlStateNormal];
     pinView.rightCalloutAccessoryView = rightButton;
+    
+    
+    UIImage *thumbnail =[UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@",_imageURL]];
+    UIImageView *thumbnailImageView = [[UIImageView alloc] initWithImage:thumbnail];
+    CGRect newBounds = CGRectMake(0.0, 0.0, 32.0, 32.0);
+    [thumbnailImageView setBounds:newBounds];
+    pinView.leftCalloutAccessoryView = thumbnailImageView;
+    
+    
     return pinView;
 }
 
@@ -134,8 +148,14 @@
     Note *temp = (Note *) [self.notesDictionary objectForKey:view.annotation.title];
     self.titleToShow = temp.noteTitle;
     self.descriptionToShow = temp.noteDescription;
+    NSLog(@"temp.noteDescription%@", temp.noteDescription);
     self.commentToShow = temp.noteComment;
+    NSLog(@"temp.noteImageURL%@", temp.noteImageURL);
+    self.imageURL = temp.noteImageURL;
+
+    
     [self performSegueWithIdentifier:@"viewNote" sender:self];
+
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
@@ -144,6 +164,8 @@
         destination.noteTitle = _titleToShow;
         destination.noteDescription = _descriptionToShow;
         destination.noteComment = _commentToShow;
+        destination.noteImageURL = _imageURL;
+        NSLog(@"destination.noteImageURL%@", destination.noteImageURL);
     }
 }
 
